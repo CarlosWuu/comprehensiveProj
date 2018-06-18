@@ -1,6 +1,13 @@
 package com.wuu.tech.commons.barcode;
 
 import org.apache.commons.lang.StringUtils;
+import org.krysalis.barcode4j.ClassicBarcodeLogicHandler;
+import org.krysalis.barcode4j.impl.AbstractBarcodeBean;
+import org.krysalis.barcode4j.impl.DefaultCanvasLogicHandler;
+import org.krysalis.barcode4j.impl.code39.Code39Bean;
+import org.krysalis.barcode4j.impl.code39.Code39LogicImpl;
+import org.krysalis.barcode4j.output.Canvas;
+import org.krysalis.barcode4j.output.CanvasProvider;
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import org.krysalis.barcode4j.tools.UnitConv;
 
@@ -82,9 +89,50 @@ public class BarcodeUtil {
         }
     }
 
+    static class MyCode39Bean extends Code39Bean{
+
+        /**
+         * 生成自定义显示文本
+         * @param canvas
+         * @param msg
+         * @param title
+         */
+        public void generateBarcode(CanvasProvider canvas, String msg, String title) {
+            if(msg != null && msg.length() != 0) {
+                ClassicBarcodeLogicHandler handler = new MyDefaultCanvasLogicHandler(this, new Canvas(canvas),title);
+                Code39LogicImpl impl = new Code39LogicImpl(this.getChecksumMode(), this.isDisplayStartStop(), this.isDisplayChecksum(), this.isExtendedCharSetEnabled());
+                impl.generateBarcodeLogic(handler, msg);
+            } else {
+                throw new NullPointerException("Parameter msg must not be empty");
+            }
+        }
+    }
+
+    static class MyDefaultCanvasLogicHandler extends DefaultCanvasLogicHandler{
+        private String displayMessage;
+
+        public MyDefaultCanvasLogicHandler(AbstractBarcodeBean bcBean, Canvas canvas, String title) {
+            super(bcBean, canvas);
+            this.displayMessage = title;
+        }
+
+        public String getDisplayMessage() {
+            return displayMessage;
+        }
+
+        public void setDisplayMessage(String displayMessage) {
+            this.displayMessage = displayMessage;
+        }
+
+        public void startBarcode(String msg, String formattedMsg) {
+            super.startBarcode(msg,getDisplayMessage());
+        }
+    }
+
+
     public static void main(String[] args) {
-        String msg = " 3773306";
-        String path = "D:\\barcode.png";
+        String msg = "3773306";
+        String path = "/Users/carloswuu/work/barcode.png";
         generateFile(msg, path);
     }
 }
